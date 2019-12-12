@@ -33,16 +33,19 @@ Iover = overlay_bounds(Iback, segm);
 
 % plot
 if verbose > 0
+    figure('name','K-means segm')
     subplot(1,3,1); imshow(I); title('original');
     subplot(1,3,2); imshow(Inew); title(sprintf('K = %d, L = %d',K,L));
     subplot(1,3,3); imshow(Iover); title('overlay bound');
+    sgtitle('K-means segm');
 end
 
 if verbose > 1
-    figure()
+    figure('name','Histogram')
     histogram(I)
+    sgtitle('Histogram');
     
-    figure()
+    figure('name','Plot of clusters')
     [m, n, d] = size(I);
     Ximg = reshape(I, m * n, d);
     Xsegm = reshape(segm, m * n, 1);
@@ -52,6 +55,34 @@ if verbose > 1
         hold on
     end
     plot3(centers(:,1), centers(:,2), centers(:,3), 'k*', 'MarkerSize', 30); % 3d plot of clusters
-    hold off 
-    
+    sgtitle('Plot of clusters');
+    hold off    
 end
+
+%% Part 2: Mean-shift segmentation
+scale_factor = 0.5;       % image downscale factor
+spatial_bandwidth = 7.0;  % spatial bandwidth
+colour_bandwidth = 20.0;   % colour bandwidth
+num_iterations = 40;      % number of mean-shift iterations
+image_sigma = 1.0;        % image preblurring scale
+
+I = imread('orange.jpg');
+I = imresize(I, scale_factor);
+Iback = I;
+d = 2*ceil(image_sigma*2) + 1;
+h = fspecial('gaussian', [d d], image_sigma);
+I = imfilter(I, h);
+
+segm = mean_shift_segm(I, spatial_bandwidth, colour_bandwidth, num_iterations);
+Inew = mean_segments(Iback, segm);
+I = overlay_bounds(Iback, segm);
+%imwrite(Inew,'result/meanshift1.png')
+%imwrite(I,'result/meanshift2.png')
+figure('name','Mean-shift segm')
+subplot(1,2,1); imshow(Inew); title(sprintf('Spatial bandwidth = %.1f, colour bandwidth = %.1f', spatial_bandwidth, colour_bandwidth));
+subplot(1,2,2); imshow(I);
+sgtitle('Mean-shift segm');
+
+
+
+
