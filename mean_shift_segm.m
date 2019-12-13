@@ -2,8 +2,8 @@ function segm = mean_shift_segm(I, spatial_bandwidth, colour_bandwidth, num_iter
 
 tic
 fprintf('Find colour channels with K-means...\n');
-K = 16;
-[ segm, centers, ~, ~, ~] = kmeans_segm(I, K, 10, 4321, true, false);
+K = 16; % Maybe 32
+[segm, centers, ~, ~, ~] = kmeans_segm(I, K, 10, 4321, true, false);
 toc
 
 centers(isnan(centers)) = 0.0;
@@ -34,6 +34,7 @@ x = reshape(X, [width*height, 1]);
 y = reshape(Y, [width*height, 1]);
 Ic = single(reshape(I, [width*height, 3]));
 wei = exp(constC*pdist2(Ic, centers));
+
 for l = 1:num_iterations
     p = (round(x)-1)*height + round(y);
     ww = mapsw(p,:) .* wei;
