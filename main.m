@@ -5,13 +5,11 @@
 clear ; close all; clc
 
 %% Part 1: K-means segmentation
-K = 4;               % number of clusters used
-L = 15;              % number of iterations
+K = 5;               % number of clusters used
+L = 12;              % number of iterations
 seed = 14;           % seed used for random initialization
 scale_factor = 1.0;  % image downscale factor
 image_sigma = 1.0;   % image preblurring scale
-RANDSAMP = true;
-DEBUG = true;
 verbose = 1;
 
 I = imread('orange.jpg');
@@ -23,7 +21,7 @@ I = imfilter(I, h);
 Ivec = reshape(I, size(I,1)*size(I,2), 3); %added
 
 tic
-[segm, centers, empty, cen_idx, count] = kmeans_segm(I, K, L, seed, RANDSAMP, DEBUG);
+[segm, centers, empty, cen_idx, count] = kmeans_segm(I, K, L, seed);
 toc
 segm = reshape(segm,size(I,1),size(I,2),1); % added
 Inew = mean_segments(Iback, segm);
@@ -34,9 +32,9 @@ Iover = overlay_bounds(Iback, segm);
 % plot
 if verbose > 0
     figure('name','K-means segm')
-    subplot(1,3,1); imshow(I); title('original');
+    subplot(1,3,1); imshow(I); title('Original');
     subplot(1,3,2); imshow(Inew); title(sprintf('K = %d, L = %d',K,L));
-    subplot(1,3,3); imshow(Iover); title('overlay bound');
+    subplot(1,3,3); imshow(Iover); title('Overlay bound');
     sgtitle('K-means segm');
 end
 
@@ -61,12 +59,12 @@ end
 
 %% Part 2: Mean-shift segmentation
 scale_factor = 0.5;       % image downscale factor
-spatial_bandwidth = 7.0;  % spatial bandwidth
-colour_bandwidth = 20.0;   % colour bandwidth
+spatial_bandwidth = 5.0;  % spatial bandwidth
+colour_bandwidth = 5.0;   % colour bandwidth
 num_iterations = 40;      % number of mean-shift iterations
 image_sigma = 1.0;        % image preblurring scale
 
-I = imread('pills.jpg');
+I = imread('orange.jpg');
 I = imresize(I, scale_factor);
 Iback = I;
 d = 2*ceil(image_sigma*2) + 1;
@@ -80,7 +78,7 @@ I = overlay_bounds(Iback, segm);
 %imwrite(I,'result/meanshift2.png')
 figure('name','Mean-shift segm')
 subplot(1,2,1); imshow(Inew); title(sprintf('Spatial bandwidth = %.1f, colour bandwidth = %.1f', spatial_bandwidth, colour_bandwidth));
-subplot(1,2,2); imshow(I);
+subplot(1,2,2); imshow(I); title('Overlay bound');
 sgtitle('Mean-shift segm');
 
 %% Part 3: Normalized Cut segmentation
@@ -106,7 +104,32 @@ I = overlay_bounds(Iback, segm);
 %imwrite(I,'result/normcuts2.png')
 
 figure('name','Norm Cut segm')
-subplot(1,2,1); imshow(Inew); title('Norm Cut Segmented')
-subplot(1,2,2); imshow(I); 
+subplot(1,2,1); imshow(Inew); title('Norm Cut Segmented');
+subplot(1,2,2); imshow(I);  title('Overlay bound');
 sgtitle('Norm Cut segm');
+
+%% Part 4: Graph Cut segmentation
+scale_factor = 0.5;          % image downscale factor
+area = [ 80, 110, 570, 300 ] % image region to train foreground with
+K = 8;                      % number of mixture components
+alpha = 8.0;                 % maximum edge cost
+sigma = 10.0;                % edge cost decay factor
+
+I = imread('tiger1.jpg');
+I = imresize(I, scale_factor);
+Iback = I;
+area = int16(area*scale_factor);
+[ segm, prior ] = graphcut_segm(I, area, K, alpha, sigma);
+
+Inew = mean_segments(Iback, segm);
+I = overlay_bounds(Iback, segm);
+%imwrite(Inew,'result/graphcut1.png')
+%imwrite(I,'result/graphcut2.png')
+%imwrite(prior,'result/graphcut3.png')
+figure('name','Graph Cut segm')
+subplot(2,2,1); imshow(Inew); title('Graph Cut segmented');
+subplot(2,2,2); imshow(I); title('Overlay bound');
+subplot(2,2,3); imshow(prior); title('Prior foreground probabilities');
+sgtitle('Graph Cut segm');
+
 
