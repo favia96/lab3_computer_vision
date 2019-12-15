@@ -12,7 +12,7 @@ scale_factor = 1.0;  % image downscale factor
 image_sigma = 1.0;   % image preblurring scale
 verbose = 1;
 
-I = imread('orange.jpg');
+I = imread('tigers.jpg');
 I = imresize(I, scale_factor);
 Iback = I;
 d = 2*ceil(image_sigma*2) + 1;
@@ -85,7 +85,7 @@ sgtitle('Mean-shift segm');
 colour_bandwidth = 20.0; % color bandwidth
 radius = 6;              % maximum neighbourhood distance
 ncuts_thresh = 0.4;      % cutting threshold
-min_area = 50;          % minimum area of segment
+min_area = 20;          % minimum area of segment
 max_depth = 8;           % maximum splitting depth
 scale_factor = 0.4;      % image downscale factor
 image_sigma = 2.0;       % image preblurring scale
